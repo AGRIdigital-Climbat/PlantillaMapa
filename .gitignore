@@ -1,5 +1,6 @@
 .opencode/
 node_modules/
+INFORME_AVANCES.md
 .ipynb_checkpoints/
 __pycache__/
 outputs/
