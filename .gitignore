@@ -1,0 +1,9 @@
+.opencode/
+node_modules/
+.ipynb_checkpoints/
+__pycache__/
+outputs/
+*.geojson
+*.gpkg
+*.zip
+.content/
