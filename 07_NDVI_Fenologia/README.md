@@ -10,14 +10,15 @@ PROSUCO · CLIMBAT — análisis por municipio de Bolivia con Google Earth Engin
 
 | Variable | ID GEE | Banda(s) / índice | Resolución | Período | Detalle para Bolivia |
 |---|---|---|---|---|---|
-| NDVI (primario) | `MODIS/061/MOD13Q1` | `NDVI` (factor **×0,0001**), cada 16 días | 250 m | 2000–actual | Serie 25 años lista para fenología; también trae EVI |
-| NDVI fino (alternativa) | `COPERNICUS/S2_SR_HARMONIZED` | B4 (rojo) + B8 (NIR) → `NDVI=(B8−B4)/(B8+B4)` | 10 m | 2017–actual | Parcela a parcela; exige máscara de nubes `SCL`. Derivables: EVI, SAVI (suelos claros altiplánicos), NDWI/MNDWI |
-| NDVI histórico fino (alternativa) | `LANDSAT/LC08/C02/T1_L2` (y LC09) | SR_B4 + SR_B5 | 30 m | 2013–actual | Puente 2013–2017 entre MODIS y Sentinel-2 |
+| NDVI serie (M7.1) | `COPERNICUS/S2_SR_HARMONIZED` | B4 (rojo) + B8 (NIR) → `NDVI=(B8−B4)/(B8+B4)` | 10 m | 2017–actual | Parcela a parcela; máscara de nubes `SCL`. Serie + curva estacional vs. `CALENDARIO` |
+| NDVI estacional (M7.2) | `LANDSAT/LC08/C02/T1_L2` (+ `LC09`) | `SR_B2–SR_B7` → `NDVI=(NIR−Red)/(NIR+Red)` | 30 m | 2013–actual | Mosaico mediana seca (may–sep, `CLOUD_COVER<30`) vs. húmeda (nov–abr, `<60`) + **ΔNDVI**. Adapta Day4 Sesión 2 Transcend |
+| NDVI serie larga (alternativa) | `MODIS/061/MOD13Q1` | `NDVI` (factor **×0,0001**), cada 16 días | 250 m | 2000–actual | Fenología 25 años; también trae EVI. Útil si S2 tiene muchos huecos por nube |
 
-## Qué extrae este análisis (contenido avanzado incluido)
+## Qué extrae este análisis (solo NDVI, sin entrenamiento)
 
-- **M7.1** Serie NDVI 16 días + curva estacional vs. `CALENDARIO` (siembra 11 / cosecha 4 por defecto altiplánico; ajustar a doble campaña en Llanos).
-- **M7.2** Fenología anual (inicio/pico/fin por año), anomalías (z < −1,5) y **mapa NDVI en estación seca** (reusado en `09` para bofedales).
+- **M7.1** Serie NDVI Sentinel-2 + curva estacional vs. `CALENDARIO` (siembra 11 / cosecha 4 por defecto altiplánico; ajustar a doble campaña en Llanos).
+- **M7.2** Comparación estacional Landsat del **mismo año agrícola Y-1/Y** (`Y = ANIOS_COMPLETOS[-1]`): mosaico seca vs. mosaico húmeda en color natural (RGB) y en NDVI lado a lado (`split_map`), bandas con sufijo `_seca/_humeda` y **mapa ΔNDVI = húmeda − seca** (verde = reverdece en húmeda: cultivos, pastizal húmedo; marrón/blanco = sin cambio). Adapta `02_building_the_classification_input_es` (Day4 Sesión 2) **sin** muestras ni Random Forest.
+- **Temporalidad:** la húmeda (nov–abr) precede a la seca (may–sep) del mismo ciclo para que ambos mosaicos muestren el mismo cultivo. Todo número se cita con **período + dataset** (ej. `LANDSAT LC08/LC09 C02 T1_L2 2023–2024`).
 - Contexto Bolivia: Altiplano pico verde feb–mar; Valles ene–mar; Llanos/Amazonía verde casi todo el año con caída en invierno seco (jun–ago). Si el NDVI sube **antes** de la siembra hay humedad residual; si sube **después**, siembra tardía o dependencia de riego.
 
 ## Limitaciones
