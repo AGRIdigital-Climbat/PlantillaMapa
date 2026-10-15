@@ -11,13 +11,16 @@ PROSUCO · CLIMBAT — análisis por municipio de Bolivia con Google Earth Engin
 | Variable | ID GEE | Banda(s) / índice | Resolución | Período | Detalle para Bolivia |
 |---|---|---|---|---|---|
 | NDVI serie (M7.1) | `COPERNICUS/S2_SR_HARMONIZED` | B4 (rojo) + B8 (NIR) → `NDVI=(B8−B4)/(B8+B4)` | 10 m | 2017–actual | Parcela a parcela; máscara de nubes `SCL`. Serie + curva estacional vs. `CALENDARIO` |
-| NDVI estacional (M7.2) | `LANDSAT/LC08/C02/T1_L2` (+ `LC09`) | `SR_B2–SR_B7` → `NDVI=(NIR−Red)/(NIR+Red)` | 30 m | 2013–actual | Mosaico mediana seca (may–sep, `CLOUD_COVER<30`) vs. húmeda (nov–abr, `<60`) + **ΔNDVI**. Adapta Day4 Sesión 2 Transcend |
+| NDVI estacional (M7.2a) | `LANDSAT/LC08/C02/T1_L2` (+ `LC09`) | `SR_B2–SR_B7` → `NDVI=(NIR−Red)/(NIR+Red)` | 30 m | 2013–actual | Mosaico mediana seca (may–sep, `CLOUD_COVER<30`) vs. húmeda (nov–abr, `<60`) del mismo año agrícola + **ΔNDVI**. Adapta Day4 Sesión 2 Transcend |
+| NDVI interanual (M7.2b) | `LANDSAT/LT05/C02/T1_L2` + `LE07` + `LC08` + `LC09` (según año) | Mismo NDVI, misión según disponibilidad | 30 m | 1984–actual | Año más seco vs. más húmedo (CHIRPS anual), misma estación may–sep + **ΔNDVI** |
 | NDVI serie larga (alternativa) | `MODIS/061/MOD13Q1` | `NDVI` (factor **×0,0001**), cada 16 días | 250 m | 2000–actual | Fenología 25 años; también trae EVI. Útil si S2 tiene muchos huecos por nube |
 
 ## Qué extrae este análisis (solo NDVI, sin entrenamiento)
 
 - **M7.1** Serie NDVI Sentinel-2 + curva estacional vs. `CALENDARIO` (siembra 11 / cosecha 4 por defecto altiplánico; ajustar a doble campaña en Llanos).
-- **M7.2** Comparación estacional Landsat del **mismo año agrícola Y-1/Y** (`Y = ANIOS_COMPLETOS[-1]`): mosaico seca vs. mosaico húmeda en color natural (RGB) y en NDVI lado a lado (`split_map`), bandas con sufijo `_seca/_humeda` y **mapa ΔNDVI = húmeda − seca** (verde = reverdece en húmeda: cultivos, pastizal húmedo; marrón/blanco = sin cambio). Adapta `02_building_the_classification_input_es` (Day4 Sesión 2) **sin** muestras ni Random Forest.
+- **M7.2a** Comparación estacional Landsat del **mismo año agrícola Y-1/Y** (`Y = ANIOS_COMPLETOS[-1]`): mosaico seca vs. mosaico húmeda en color natural (RGB) y en NDVI lado a lado (`split_map`), bandas con sufijo `_seca/_humeda` y **mapa ΔNDVI = húmeda − seca** (verde = reverdece en húmeda: cultivos, pastizal húmedo; marrón/blanco = sin cambio). Adapta `02_building_the_classification_input_es` (Day4 Sesión 2) **sin** muestras ni Random Forest.
+- **M7.2b** Comparación interanual: año más seco vs. más húmedo según precipitación anual CHIRPS, con mosaicos Landsat multi-misión (LT05/LE07/LC08/LC09 según el año) de la misma estación (may–sep), mapa dividido NDVI y **ΔNDVI = húmedo − seco**.
+- **M7.3** Variabilidad con la serie de M7.1: **(a)** boxplots por mes y por año, **(b)** anomalía z-score mensual (`UMBRALES["ndvi_anomalia_z"]`), **(c)** heatmap año × mes.
 - **Temporalidad:** la húmeda (nov–abr) precede a la seca (may–sep) del mismo ciclo para que ambos mosaicos muestren el mismo cultivo. Todo número se cita con **período + dataset** (ej. `LANDSAT LC08/LC09 C02 T1_L2 2023–2024`).
 - Contexto Bolivia: Altiplano pico verde feb–mar; Valles ene–mar; Llanos/Amazonía verde casi todo el año con caída en invierno seco (jun–ago). Si el NDVI sube **antes** de la siembra hay humedad residual; si sube **después**, siembra tardía o dependencia de riego.
 
